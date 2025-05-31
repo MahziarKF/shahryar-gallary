@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                Int             @id @default(autoincrement())
+  username          String          @unique
+  email             String?         @unique
+  phone             String?         @unique
+  password          String
+  role              String
+  is_verified       Boolean         @default(false)
+  is_active         Boolean         @default(true)
+  profile_image_url String?         @default("")
+  last_login_at     DateTime?
+  updated_at        DateTime        @updatedAt
+  created_at        DateTime        @default(now())
+  enrollments       Enrollment[]
+  teachings         CourseTeacher[]
+}
+
+model Course {
+  id          Int             @id @default(autoincrement())
+  title       String          @unique
+  description String?
+  price       String             // ✅ Changed from String to Int
+  duration    String
+  is_active   Boolean         @default(true)
+  created_at  DateTime        @default(now())
+  enrollments Enrollment[]
+  teachers    CourseTeacher[]
+}
+
+model Enrollment {
+  id          Int      @id @default(autoincrement())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  enrolled_at DateTime @default(now())
+
+  userId   Int
+  courseId Int
+
+  @@unique([userId, courseId])
+}
+
+model CourseTeacher {
+  id          Int      @id @default(autoincrement())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  assigned_at DateTime @default(now())
+
+  userId   Int
+  courseId Int
+
+  @@unique([userId, courseId])
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @db.VarChar(100)
+  products Product[]
+}
+
+model Product {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(200)
+  description String?
+  price       Int    // ✅ Match SQL DECIMAL(10, 2)
+  stock       Int       @default(0)
+  category    Category? @relation(fields: [categoryId], references: [id])
+  categoryId  Int?
+  created_at  DateTime  @default(now())
+}
