@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 interface Course {
   id: number;
@@ -13,13 +13,19 @@ interface Course {
 
 interface CourseCardProps {
   course: Course;
-  deleteCourse: (id: string) => void;
+  isSelected?: boolean;
+  blank?: boolean;
+  deleteCourse: (id: number) => void;
 }
 
-export default function CourseCard({ course, deleteCourse }: CourseCardProps) {
+export default function CourseCard({
+  course,
+  deleteCourse,
+  isSelected,
+  blank = false,
+}: CourseCardProps) {
   const [loading, setLoading] = useState(false);
 
-  // Demo toggle: loading true for 2 seconds then false
   const toggleLoading = () => {
     setLoading(true);
     setTimeout(() => setLoading(false), 2000);
@@ -28,7 +34,9 @@ export default function CourseCard({ course, deleteCourse }: CourseCardProps) {
   return (
     <>
       <div
-        className={`ring-2 ring-orange-700 rounded-md p-4 grid grid-cols-10 grid-rows-3 gap-2 items-center ${
+        className={`ring-1 ${
+          isSelected ? "bg-emerald-100 ring-3 ring-blue-400 shadow-md" : ""
+        } ring-orange-700 rounded-md p-4 grid grid-cols-10 grid-rows-3 gap-2 items-center ${
           loading ? "pointer-events-none" : ""
         }`}
       >
@@ -96,43 +104,39 @@ export default function CourseCard({ course, deleteCourse }: CourseCardProps) {
         </div>
 
         {/* Buttons */}
-        <div className="col-span-3 row-span-3 flex flex-col justify-between items-center gap-2">
-          {loading ? (
-            <>
-              <div className="skeleton w-full h-8 rounded"></div>
-              <div className="skeleton w-full h-8 rounded"></div>
-            </>
-          ) : (
-            <>
-              <button
-                className="w-full bg-blue-600 text-white rounded py-1 hover:bg-blue-700 transition"
-                // onClick={() => editCourse(course.id)} // placeholder
-              >
-                ویرایش
-              </button>
-              <button
-                onClick={() => {
-                  toggleLoading();
-                  deleteCourse(course.id);
-                }}
-                className="w-full bg-red-600 text-white rounded py-1 hover:bg-red-700 transition"
-                // onClick={() => deleteCourse(course.id)} // placeholder
-              >
-                حذف
-              </button>
-            </>
-          )}
-        </div>
+        {!blank && (
+          <div className="col-span-3 row-span-3 flex flex-col justify-between items-center gap-2">
+            {loading ? (
+              <>
+                <div className="skeleton w-full h-8 rounded"></div>
+                <div className="skeleton w-full h-8 rounded"></div>
+              </>
+            ) : (
+              <>
+                <button className="w-full bg-blue-600 text-white rounded py-1 hover:bg-blue-700 transition">
+                  ویرایش
+                </button>
+                <button
+                  onClick={() => {
+                    toggleLoading();
+                    deleteCourse(course.id);
+                  }}
+                  className="w-full bg-red-600 text-white rounded py-1 hover:bg-red-700 transition"
+                >
+                  حذف
+                </button>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Button to toggle loading */}
-
-      {/* Styles for skeleton shimmer */}
+      {/* Skeleton shimmer style */}
       <style jsx>{`
         .skeleton {
           position: relative;
           overflow: hidden;
-          background-color: #e2e8f0; /* Tailwind slate-200 */
+          background-color: #e2e8f0;
         }
         .skeleton::before {
           content: "";

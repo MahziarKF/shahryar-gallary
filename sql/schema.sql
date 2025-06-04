@@ -25,7 +25,7 @@ CREATE TABLE "Product" (
 CREATE TABLE "User" (
     id SERIAL PRIMARY KEY,
     username VARCHAR(20) UNIQUE NOT NULL,
-    email VARCHAR(150) UNIQUE,
+    email VARCHAR(150) UNIQUE NOT NULL,
     phone VARCHAR(20) UNIQUE,
     password TEXT NOT NULL,
     role VARCHAR(20) NOT NULL,
@@ -34,7 +34,8 @@ CREATE TABLE "User" (
     profile_image_url TEXT DEFAULT '',
     last_login_at TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    verification INT
 );
 
 -- ========================
@@ -50,16 +51,17 @@ CREATE TABLE "Course" (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
 -- ========================
 -- ENROLLMENTS
 -- ========================
 CREATE TABLE "Enrollment" (
     id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES "User"(id) ON DELETE CASCADE,
-    course_id INT NOT NULL REFERENCES "Course"(id) ON DELETE CASCADE,
+    user_id INT NOT NULL,
+    course_id INT NOT NULL,
     enrolled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(user_id, course_id)
+    UNIQUE(user_id, course_id),
+    FOREIGN KEY (user_id) REFERENCES "User"(id) ON DELETE CASCADE,
+    FOREIGN KEY (course_id) REFERENCES "Course"(id) ON DELETE CASCADE
 );
 
 -- ========================
@@ -67,10 +69,23 @@ CREATE TABLE "Enrollment" (
 -- ========================
 CREATE TABLE "CourseTeacher" (
     id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES "User"(id) ON DELETE CASCADE,
-    course_id INT NOT NULL REFERENCES "Course"(id) ON DELETE CASCADE,
+    user_id INT NOT NULL,
+    course_id INT NOT NULL,
     assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(user_id, course_id)
+    UNIQUE(user_id, course_id),
+    FOREIGN KEY (user_id) REFERENCES "User"(id) ON DELETE CASCADE,
+    FOREIGN KEY (course_id) REFERENCES "Course"(id) ON DELETE CASCADE
+);
+
+-- ========================
+-- ATTENDANCE
+-- ========================
+CREATE TABLE "Attendance" (
+    id SERIAL PRIMARY KEY,
+    enrollment_id INT NOT NULL UNIQUE,
+    checkList BOOLEAN[] NOT NULL DEFAULT '{}',
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (enrollment_id) REFERENCES "Enrollment"(id) ON DELETE CASCADE
 );
 
 -- ========================
@@ -79,10 +94,16 @@ CREATE TABLE "CourseTeacher" (
 INSERT INTO "User" (
   username, email, phone, password, role
 ) VALUES (
-  'mahz', 'mahz@example.com', '1234567890', 'securepassword123', 'student'
+  'ww', 'mahz@example.com', '1234567890', 'securepassword123', 'student'
 );
 
 -- ========================
--- MAKE MAHZ ADMIN
+-- MAKE ss ADMIN
 -- ========================
-UPDATE "User" SET role = 'admin' WHERE username = 'mahz';
+UPDATE "User" SET role = 'admin' WHERE username = 'ssa';
+
+-- ========================
+-- ENROLL MAHZ IN COURSE ID 1
+-- ========================
+INSERT INTO "Enrollment" (user_id, course_id)
+SELECT id, 1 FROM "User" WHERE username = 'mahz';

@@ -1,9 +1,12 @@
-import prisma from "@/lib/prisma";
+// app/api/enroll-user/route.ts (assuming you're using App Router)
+
 import { NextRequest } from "next/server";
+import prisma from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
   try {
-    const { username, courseId } = await req.json();
+    const body = await req.json();
+    const { username, courseId } = body;
 
     if (!username || !courseId) {
       return new Response(
@@ -12,17 +15,26 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Find the user
-    const user = await prisma.user.findUnique({ where: { username } });
+    // Find the user by username
+    const user = await prisma.user.findUnique({
+      where: { username },
+    });
+
     if (!user) {
-      return new Response(JSON.stringify({ error: "User not found" }), {
-        status: 404,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "کاربر مورد نظر پیدا نشد." }),
+        {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
 
     // Check if course exists
-    const course = await prisma.course.findUnique({ where: { id: courseId } });
+    const course = await prisma.course.findUnique({
+      where: { id: Number(courseId) },
+    });
+
     if (!course) {
       return new Response(JSON.stringify({ error: "Course not found" }), {
         status: 404,
@@ -30,7 +42,26 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Create enrollment (unique user-course pair)
+    // Check if already enrolled (optional — useful before Prisma throws P2002)
+    const existingEnrollment = await prisma.enrollment.findUnique({
+      where: {
+        userId_courseId: {
+          userId: user.id,
+          courseId: course.id,
+        },
+      },
+    });
+
+    if (existingEnrollment) {
+      return new Response(
+        JSON.stringify({
+          error: "این کاربر در حال حاضر در این دوره شرکت کرده است",
+        }),
+        { status: 409, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Create the enrollment
     const enrollment = await prisma.enrollment.create({
       data: {
         userId: user.id,
@@ -40,16 +71,15 @@ export async function POST(req: NextRequest) {
 
     return new Response(
       JSON.stringify({ message: "User enrolled successfully", enrollment }),
-      {
-        status: 201,
-        headers: { "Content-Type": "application/json" },
-      }
+      { status: 201, headers: { "Content-Type": "application/json" } }
     );
   } catch (error: any) {
-    // Handle unique constraint violation (user already enrolled)
+    console.error("Enrollment error:", error);
+
+    // Prisma unique constraint error handling
     if (
       error?.code === "P2002" &&
-      error?.meta?.target?.includes("user_id_course_id")
+      error?.meta?.target?.includes("userId_courseId")
     ) {
       return new Response(
         JSON.stringify({ error: "User is already enrolled in this course." }),

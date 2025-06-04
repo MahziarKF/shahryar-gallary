@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 import { serialize } from "cookie";
+import { number } from "framer-motion";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
@@ -45,7 +46,7 @@ export async function getUserFromToken(token: string) {
   if (!decoded) return null;
 
   const user = await prisma.user.findUnique({
-    where: { id: decoded.userId },
+    where: { id: Number(decoded.userId) },
     select: {
       id: true,
       username: true,

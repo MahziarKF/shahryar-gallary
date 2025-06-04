@@ -15,7 +15,6 @@ export async function POST(
       headers: { "Content-Type": "application/json" },
     });
   }
-
   try {
     const deletedCourse = await prisma.course.delete({
       where: { id },

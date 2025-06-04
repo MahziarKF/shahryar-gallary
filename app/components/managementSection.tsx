@@ -4,6 +4,7 @@ import Courses from "./courseManage";
 import { useState } from "react";
 import Students from "./studentsManage";
 import Attendance from "./attendanceManage";
+import Dropdown from "./dropDown";
 
 export default function ManagementSection() {
   const [selectedKey, setSelectedKey] = useState("Courses");

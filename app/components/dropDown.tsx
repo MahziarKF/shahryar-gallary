@@ -7,15 +7,25 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 type DropdownProps = {
   title: string;
   items: string[];
+  optionalAction?: any;
 };
 
-export default function Dropdown({ title, items }: DropdownProps) {
+export default function Dropdown({
+  title,
+  items,
+  optionalAction,
+}: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
   const toggleDropdown = () => setIsOpen(!isOpen);
   const handleSelect = (item: string) => {
+    // Match label to internal mode value
+    const modeMap: Record<string, string> = {
+      "دوره ها": "course",
+      "دانش آموزان دوره": "students",
+    };
+    optionalAction(modeMap[item]); // e.g., setCurrentMode("students")
     setSelected(item);
     setIsOpen(false);
   };
