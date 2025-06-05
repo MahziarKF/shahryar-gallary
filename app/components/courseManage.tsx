@@ -14,7 +14,7 @@ type CourseType = {
   is_active?: boolean;
 };
 export default function Courses() {
-  const [currentMode, setCurrentMode] = useState<string>("students");
+  const [currentMode, setCurrentMode] = useState<string>("course");
   const [currentCourse, setCurrentCourse] = useState<CourseType | null>(null);
   const [courses, setCourses] = useState<
     | {
@@ -168,6 +168,7 @@ export default function Courses() {
     price?: string;
     duration?: string;
     is_active?: boolean;
+    teacherId: string;
   }) => {
     try {
       const res = await fetch("/api/addCourse", {
@@ -188,6 +189,11 @@ export default function Courses() {
       console.error(error);
     }
   };
+  const teacherOptions = [
+    { id: 1, name: "Teacher One" },
+    { id: 2, name: "Teacher Two" },
+    { id: 3, name: "Teacher Three" },
+  ];
 
   const deleteCourse = async (courseId: number) => {
     const res = await fetch(`/api/deleteCourse/${courseId}`, {
@@ -205,15 +211,17 @@ export default function Courses() {
     price: "",
     duration: "",
     is_active: true,
+    teacherId: "", // 👈 new
   });
 
-  const handleInputChange = (e: any) => {
+  const handleInputChange = (e: React.ChangeEvent<any>) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : String(value),
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
+
   const handleAddCourse = async () => {
     await addCourse({ ...formData });
     setFormData({
@@ -222,6 +230,7 @@ export default function Courses() {
       price: "",
       duration: "",
       is_active: true,
+      teacherId: "",
     });
   };
   return (
@@ -256,6 +265,20 @@ export default function Courses() {
               onChange={handleInputChange}
               className="block mb-2 p-2 border rounded w-full"
             />
+            <select
+              name="teacherId"
+              value={formData.teacherId}
+              onChange={handleInputChange}
+              className="block mb-2 p-2 border rounded w-full"
+            >
+              <option value="">انتخاب معلم</option>
+              {teacherOptions.map((teacher) => (
+                <option key={teacher.id} value={teacher.id}>
+                  {teacher.name}
+                </option>
+              ))}
+            </select>
+
             <input
               name="price"
               type="number"

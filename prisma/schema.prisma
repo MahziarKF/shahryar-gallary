@@ -10,7 +10,7 @@ datasource db {
 model User {
   id                Int             @id @default(autoincrement())
   username          String          @unique @db.VarChar(20)
-  email             String         @unique @db.VarChar(150)
+  email             String          @unique @db.VarChar(150)
   phone             String?         @unique @db.VarChar(20)
   password          String
   role              String          @db.VarChar(20)
@@ -20,10 +20,11 @@ model User {
   last_login_at     DateTime?       @db.Timestamp(6)
   updated_at        DateTime?       @default(now()) @updatedAt @db.Timestamp(6)
   created_at        DateTime?       @default(now()) @db.Timestamp(6)
-  verification Int?
+  verification      Int?
   teachings         CourseTeacher[]
   enrollments       Enrollment[]
 }
+
 
 model Course {
   id          Int             @id @default(autoincrement())
@@ -31,11 +32,27 @@ model Course {
   description String?
   price       String
   duration    String
+teacherId   Int
+teacher     Teacher @relation(fields: [teacherId], references: [id], onDelete: Restrict)
+
   is_active   Boolean?        @default(true)
   created_at  DateTime?       @default(now()) @db.Timestamp(6)
-  teachers    CourseTeacher[]
+  teachers    CourseTeacher[] // still supports co-teachers
   enrollments Enrollment[]
 }
+model Teacher {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(100)
+  professions String[]
+  bio         String?
+  image_url   String?
+  phone       String?  @unique
+  created_at  DateTime @default(now()) @db.Timestamp(6)
+  updated_at  DateTime @default(now()) @updatedAt @db.Timestamp(6)
+
+  courses     Course[]
+}
+
 
 model CourseTeacher {
   id          Int       @id @default(autoincrement())

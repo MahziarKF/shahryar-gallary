@@ -39,6 +39,21 @@ CREATE TABLE "User" (
 );
 
 -- ========================
+-- TEACHERS (new model)
+-- ========================
+CREATE TABLE "Teacher" (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    bio TEXT,
+    image_url TEXT,
+    phone VARCHAR(20) UNIQUE,
+    professions TEXT[] DEFAULT '{}',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- ========================
 -- COURSES
 -- ========================
 CREATE TABLE "Course" (
@@ -47,8 +62,10 @@ CREATE TABLE "Course" (
     description TEXT,
     price TEXT NOT NULL,
     duration TEXT NOT NULL,
+    teacher_id INT NOT NULL,
     is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (teacher_id) REFERENCES "Teacher"(id) ON DELETE RESTRICT
 );
 
 -- ========================
@@ -65,7 +82,7 @@ CREATE TABLE "Enrollment" (
 );
 
 -- ========================
--- COURSE TEACHERS
+-- COURSE TEACHERS (Co-teaching)
 -- ========================
 CREATE TABLE "CourseTeacher" (
     id SERIAL PRIMARY KEY,
@@ -83,10 +100,11 @@ CREATE TABLE "CourseTeacher" (
 CREATE TABLE "Attendance" (
     id SERIAL PRIMARY KEY,
     enrollment_id INT NOT NULL UNIQUE,
-    checkList BOOLEAN[] NOT NULL DEFAULT '{}',
+    checklist BOOLEAN[] NOT NULL DEFAULT '{}',
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (enrollment_id) REFERENCES "Enrollment"(id) ON DELETE CASCADE
 );
+
 
 -- ========================
 -- INSERT MAHZ USER

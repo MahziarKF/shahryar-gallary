@@ -5,14 +5,16 @@ import { useState } from "react";
 import Students from "./studentsManage";
 import Attendance from "./attendanceManage";
 import Dropdown from "./dropDown";
+import CreateTeacher from "./createTeacher";
 
 export default function ManagementSection() {
-  const [selectedKey, setSelectedKey] = useState("Courses");
+  const [selectedKey, setSelectedKey] = useState("Teachers");
 
   const managementOptions = [
     { label: "دوره و کلاس ها", key: "Courses" },
+    { label: "اساتید", key: "Teachers" },
     { label: "دانش آموزان", key: "Students" },
-    { label: "حضور غیاب روزانه", key: "attendance" },
+    { label: "حضور غیاب روزانه", key: "Attendance" },
   ];
 
   const renderContent = () => {
@@ -21,8 +23,10 @@ export default function ManagementSection() {
         return <Courses />;
       case "Students":
         return <Students />;
-      case "attendance":
+      case "Attendance":
         return <Attendance />;
+      case "Teachers":
+        return <CreateTeacher />;
       default:
         return null;
     }
