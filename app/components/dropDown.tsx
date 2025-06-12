@@ -6,14 +6,16 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 type DropdownProps = {
   title: string;
-  items: string[];
+  items: { id?: number | string; title: string }[];
   optionalAction?: any;
+  onSelect?: any;
 };
 
 export default function Dropdown({
   title,
   items,
   optionalAction,
+  onSelect,
 }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
@@ -25,7 +27,9 @@ export default function Dropdown({
       "دوره ها": "course",
       "دانش آموزان دوره": "students",
     };
-    optionalAction(modeMap[item]); // e.g., setCurrentMode("students")
+    if (optionalAction) {
+      optionalAction(modeMap[item]);
+    }
     setSelected(item);
     setIsOpen(false);
   };
@@ -62,10 +66,13 @@ export default function Dropdown({
             {items.map((item, index) => (
               <li
                 key={index}
-                onClick={() => handleSelect(item)}
+                onClick={() => {
+                  handleSelect(item.title);
+                  onSelect(item.id, item.title);
+                }}
                 className="px-4 text-[#F59E0B] text-lg font-semibold py-2 hover:bg-blue-100 cursor-pointer"
               >
-                {item}
+                {item.title}
               </li>
             ))}
           </ul>

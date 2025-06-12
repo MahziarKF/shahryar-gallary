@@ -68,10 +68,14 @@ const CircleSlider = () => {
     startAutoSlide(); // Reset timer when user manually changes page
   };
 
-  const currentItems = instruments.slice(
-    page * itemsPerPage,
-    (page + 1) * itemsPerPage
-  );
+  const currentItems = instruments
+    .slice(page * itemsPerPage, (page + 1) * itemsPerPage)
+    .concat(
+      instruments.slice(
+        0,
+        Math.max(0, (page + 1) * itemsPerPage - instruments.length)
+      )
+    );
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
@@ -104,7 +108,7 @@ const CircleSlider = () => {
           <button
             key={i}
             onClick={() => handleDotClick(i)}
-            className={`w-3 h-3 rounded-full ${
+            className={`w-3 mt-5 h-3 rounded-full ${
               page === i ? "bg-black" : "bg-gray-400"
             } transition-all duration-300`}
           />

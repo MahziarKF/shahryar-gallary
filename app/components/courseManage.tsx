@@ -5,6 +5,7 @@ import Dropdown from "./dropDown";
 import { faRotateRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import SmallStudentCard from "./smallStudentCard";
+
 type CourseType = {
   id: number;
   title: string;
@@ -13,20 +14,20 @@ type CourseType = {
   duration?: string;
   is_active?: boolean;
 };
-export default function Courses() {
+
+export default function Courses({
+  existingTeachers,
+  existingCourses,
+  onCoursesChange,
+}: {
+  onCoursesChange: (newCourses: CourseType[]) => void;
+  existingTeachers: any;
+  existingCourses: CourseType[];
+}) {
   const [currentMode, setCurrentMode] = useState<string>("course");
   const [currentCourse, setCurrentCourse] = useState<CourseType | null>(null);
-  const [courses, setCourses] = useState<
-    | {
-        id: number;
-        title: string;
-        description?: string;
-        price?: string;
-        duration?: string;
-        is_active?: boolean;
-      }[]
-    | null
-  >(null);
+  const [courses, setCourses] = useState<CourseType[]>(existingCourses);
+
   const [users, setUsers] = useState<
     {
       id: number;
@@ -36,15 +37,8 @@ export default function Courses() {
       role: string;
     }[]
   >([]);
-  const [courseUsers, setCourseUsers] = useState<
-    {
-      id: number;
-      username: string;
-      email?: string | null;
-      phone?: string | null;
-      role: string;
-    }[]
-  >([]);
+
+  const [courseUsers, setCourseUsers] = useState<typeof users>([]);
   const [enrollMessage, setEnrollMessage] = useState<{
     message: string;
     isOk: boolean;
@@ -52,20 +46,22 @@ export default function Courses() {
 
   const [studentName, setStudentName] = useState<string>("");
   const [loadingStudent, setLoadingStudent] = useState<boolean>(false);
+  const [teachers, setTeachers] = useState(existingTeachers);
+  // Only fetch users once on mount
+
   useEffect(() => {
-    const callFetchCourses = async () => {
-      const { courses } = await fetchCourses();
-      console.log(courses);
-      setCourses(courses);
+    const fetchUsers = async () => {
+      const res = await fetch("/api/getAllStudents");
+      if (res.ok) {
+        const data = await res.json();
+        setUsers(data.students);
+      } else {
+        console.error("Failed to fetch students");
+      }
     };
-    const callFetchUsers = async () => {
-      const users = await fetchUsers();
-      setUsers(users.students);
-      console.log(users);
-    };
-    callFetchCourses();
-    callFetchUsers();
+    fetchUsers();
   }, []);
+
   useEffect(() => {
     const fetchCourseUsersCaller = async () => {
       if (currentCourse) {
@@ -75,34 +71,24 @@ export default function Courses() {
     fetchCourseUsersCaller();
   }, [currentCourse]);
   useEffect(() => {
+    setCourses(existingCourses);
+  }, [existingCourses]);
+
+  useEffect(() => {
     setEnrollMessage({ isOk: true, message: "" });
     setStudentName("");
   }, [currentCourse, currentMode]);
-  const updateCourses = async () => {
-    const { courses } = await fetchCourses();
-    setCourses(courses);
-  };
-  const fetchUsers = async () => {
-    const res = await fetch("/api/getAllStudents");
-    const data = await res.json();
-    return data;
-  };
-  const fetchCourses = async () => {
-    const res = await fetch("/api/getAllCourses");
-    const data = await res.json();
-    return data;
-  };
+
   const fetchCourseUsers = async (courseId: number) => {
     try {
-      console.log("fetching course users....");
       const res = await fetch(`/api/getAllEnrolledStudents/${courseId}`);
       const data = await res.json();
-      console.log(data);
       setCourseUsers(data.users);
     } catch (error) {
       console.log(error);
     }
   };
+
   const enrollStudent = async (studentName: string) => {
     setStudentName("");
     if (!studentName) {
@@ -112,25 +98,18 @@ export default function Courses() {
     if (!currentCourse) return;
 
     try {
-      console.log("enrolling student in", currentCourse, "...");
-
       const res = await fetch("/api/enrollUser", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username: studentName,
           courseId: currentCourse.id,
         }),
       });
-
       const result = await res.json();
       if (!res.ok) {
-        console.log("Error enrolling student:", result.error);
         setEnrollMessage({ message: result.error, isOk: false });
       } else {
-        console.log("Enrolled successfully:", result);
         setEnrollMessage({
           message: "دانش آموز با موفقیت اضافه شد",
           isOk: true,
@@ -141,27 +120,24 @@ export default function Courses() {
       console.error("Network or server error:", error);
     }
   };
+
   const removeEnrollment = async (userId: number) => {
     try {
       setLoadingStudent(true);
-      console.log("removing enrollment for", userId, "...");
-      console.log({ userId, currentCourse });
       const res = await fetch("/api/removeEnrollment", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, courseId: currentCourse?.id }),
-        headers: {
-          "Content-Type": "application/json",
-        },
       });
-      const newUsersForCurrentCourseUsers = courseUsers.filter(
-        (u) => u.id !== userId
-      );
-      setCourseUsers(newUsersForCurrentCourseUsers);
+      if (res.ok) {
+        setCourseUsers((prev) => prev.filter((u) => u.id !== userId));
+      }
     } catch (error) {
-      console.log("error while removing enrollment  for", userId);
+      console.log("error while removing enrollment for", userId);
     }
     setLoadingStudent(false);
   };
+
   const addCourse = async (data: {
     title: string;
     description?: string;
@@ -183,26 +159,35 @@ export default function Courses() {
         }),
       });
       const resJson = await res.json();
-      console.log(res.status, resJson);
-      updateCourses();
+      // Instead of fetching courses again, you may want to handle it outside or via props update
+      // updateCourses(); // Removed this
+      if (res.ok) {
+        console.log("added:", resJson);
+        setCourses([...courses, resJson]);
+        onCoursesChange([...courses, resJson]);
+      }
     } catch (error) {
       console.error(error);
     }
   };
-  const teacherOptions = [
-    { id: 1, name: "Teacher One" },
-    { id: 2, name: "Teacher Two" },
-    { id: 3, name: "Teacher Three" },
-  ];
 
   const deleteCourse = async (courseId: number) => {
-    const res = await fetch(`/api/deleteCourse/${courseId}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-    });
-    const result = await res.json();
-    console.log("deleting course", courseId, "result : ", result);
-    updateCourses();
+    try {
+      const res = await fetch(`/api/deleteCourse/${courseId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const result = await res.json();
+      if (res.ok) {
+        const updatedCourses = courses.filter(
+          (course) => course.id !== courseId
+        );
+        setCourses(updatedCourses);
+        onCoursesChange(updatedCourses); // <-- Notify parent
+      }
+    } catch (error) {
+      console.error("Error deleting course:", error);
+    }
   };
 
   const [formData, setFormData] = useState({
@@ -211,7 +196,7 @@ export default function Courses() {
     price: "",
     duration: "",
     is_active: true,
-    teacherId: "", // 👈 new
+    teacherId: "",
   });
 
   const handleInputChange = (e: React.ChangeEvent<any>) => {
@@ -233,12 +218,13 @@ export default function Courses() {
       teacherId: "",
     });
   };
+
   return (
     <div>
       <div className="text-right">
         <Dropdown
           title="نوع دستور"
-          items={["دانش آموزان دوره", "دوره ها"]}
+          items={[{ title: "دانش آموزان دوره" }, { title: "دوره ها" }]}
           optionalAction={setCurrentMode}
         />
       </div>
@@ -272,7 +258,7 @@ export default function Courses() {
               className="block mb-2 p-2 border rounded w-full"
             >
               <option value="">انتخاب معلم</option>
-              {teacherOptions.map((teacher) => (
+              {teachers.map((teacher: { id: number; name: string }) => (
                 <option key={teacher.id} value={teacher.id}>
                   {teacher.name}
                 </option>
@@ -317,13 +303,7 @@ export default function Courses() {
           <div>
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-bold">لیست دوره‌ها</h3>
-              <button
-                onClick={updateCourses}
-                className="text-blue-600 hover:text-blue-800 transition"
-                title="بروزرسانی لیست دوره‌ها"
-              >
-                <FontAwesomeIcon icon={faRotateRight} className="text-lg" />
-              </button>
+              {/* Removed updateCourses button */}
             </div>
 
             <ul className="grid grid-cols-2 gap-4 w-full list-none">
@@ -353,6 +333,7 @@ export default function Courses() {
           {currentCourse
             ? courseUsers.map((u) => (
                 <SmallStudentCard
+                  key={u.id}
                   id={u.id}
                   role={u.role}
                   email={u.email}
@@ -364,7 +345,6 @@ export default function Courses() {
               ))
             : null}
           <ul className="grid grid-cols-2 gap-4 w-full list-none">
-            {" "}
             {!currentCourse
               ? courses?.map((course) => (
                   <li
@@ -384,40 +364,35 @@ export default function Courses() {
                 ))
               : null}
           </ul>
-        </>
-      )}
-      {currentCourse ? (
-        <>
-          {" "}
-          <div className="flex items-center gap-3 mt-5">
+
+          <div className="flex flex-col gap-3 mt-4">
             <input
-              name="duration"
               type="text"
               placeholder="نام دانش آموز"
               value={studentName}
               onChange={(e) => setStudentName(e.target.value)}
-              className="p-2 border rounded flex-grow"
+              className="p-2 border rounded"
             />
             <button
-              onClick={() => {
-                enrollStudent(studentName);
-              }}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              onClick={() => enrollStudent(studentName)}
+              className="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800"
             >
-              اضافه کردن دانش آموز به دوره
+              ثبت نام دانش آموز
             </button>
+            {enrollMessage && (
+              <div
+                className={`text-sm p-2 mt-2 rounded ${
+                  enrollMessage.isOk
+                    ? "text-green-600 bg-green-100"
+                    : "text-red-600 bg-red-100"
+                }`}
+              >
+                {enrollMessage.message}
+              </div>
+            )}
           </div>
-          {enrollMessage && (
-            <p
-              className={`text-md text-left ${
-                enrollMessage.isOk ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {enrollMessage.message}
-            </p>
-          )}
         </>
-      ) : null}
+      )}
     </div>
   );
 }

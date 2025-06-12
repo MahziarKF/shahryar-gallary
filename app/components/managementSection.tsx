@@ -7,31 +7,53 @@ import Attendance from "./attendanceManage";
 import Dropdown from "./dropDown";
 import CreateTeacher from "./createTeacher";
 
-export default function ManagementSection() {
+export default function ManagementSection({
+  teachers,
+  courses,
+}: {
+  teachers: any[];
+  courses: any[];
+}) {
   const [selectedKey, setSelectedKey] = useState("Teachers");
-
+  const [managedCourses, setManagedCourses] = useState(courses);
+  const [managedTeachers, setManagedTeachers] = useState(teachers);
   const managementOptions = [
     { label: "دوره و کلاس ها", key: "Courses" },
     { label: "اساتید", key: "Teachers" },
     { label: "دانش آموزان", key: "Students" },
     { label: "حضور غیاب روزانه", key: "Attendance" },
   ];
-
   const renderContent = () => {
     switch (selectedKey) {
       case "Courses":
-        return <Courses />;
+        return (
+          <Courses
+            onCoursesChange={handleCoursesChange}
+            existingCourses={managedCourses}
+            existingTeachers={managedTeachers}
+          />
+        );
       case "Students":
         return <Students />;
       case "Attendance":
-        return <Attendance />;
+        return <Attendance courses={managedCourses} />;
       case "Teachers":
-        return <CreateTeacher />;
+        return (
+          <CreateTeacher
+            onTeacherChange={handleTeacherChanage}
+            existingTeachers={managedTeachers}
+          />
+        );
       default:
         return null;
     }
   };
-
+  const handleCoursesChange = (newCourses: any[]) => {
+    setManagedCourses(newCourses);
+  };
+  const handleTeacherChanage = (newTeachers: any[]) => {
+    setManagedTeachers(newTeachers);
+  };
   return (
     <div>
       <div className="w-full flex sm:gap-5 justify-around mb-5">

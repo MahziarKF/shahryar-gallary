@@ -1,14 +1,16 @@
-// /app/api/addCourse/route.ts
 import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
 
+// Hardcoded teacherId (make sure this teacher exists in your DB)
+const HARDCODED_TEACHER_ID = 1;
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { id, title, description, price, duration, is_active } = body;
-    // Validate id if provided
+
     if (id !== undefined && typeof id !== "number") {
       return NextResponse.json(
         { error: "Id must be a number if provided." },
@@ -39,7 +41,7 @@ export async function POST(req: Request) {
 
     let course;
     if (id) {
-      // Upsert by id (update if exists, create if not)
+      // Upsert course by ID
       course = await prisma.course.upsert({
         where: { id },
         update: {
@@ -48,6 +50,7 @@ export async function POST(req: Request) {
           price: price ?? "0",
           duration: duration ?? "0",
           is_active: is_active ?? true,
+          teacherId: HARDCODED_TEACHER_ID,
         },
         create: {
           title,
@@ -55,6 +58,7 @@ export async function POST(req: Request) {
           price: price ?? "0",
           duration: duration ?? "0",
           is_active: is_active ?? true,
+          teacherId: HARDCODED_TEACHER_ID,
         },
       });
     } else {
@@ -63,9 +67,10 @@ export async function POST(req: Request) {
         data: {
           title,
           description: description ?? null,
-          price: String(price) ?? 0,
-          duration: String(duration) ?? 0,
+          price: price ?? "0",
+          duration: duration ?? "0",
           is_active: is_active ?? true,
+          teacherId: HARDCODED_TEACHER_ID,
         },
       });
     }

@@ -1,5 +1,3 @@
-// app/api/enroll-user/route.ts (assuming you're using App Router)
-
 import { NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 
@@ -23,10 +21,7 @@ export async function POST(req: NextRequest) {
     if (!user) {
       return new Response(
         JSON.stringify({ error: "کاربر مورد نظر پیدا نشد." }),
-        {
-          status: 404,
-          headers: { "Content-Type": "application/json" },
-        }
+        { status: 404, headers: { "Content-Type": "application/json" } }
       );
     }
 
@@ -42,7 +37,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Check if already enrolled (optional — useful before Prisma throws P2002)
+    // Check if already enrolled
     const existingEnrollment = await prisma.enrollment.findUnique({
       where: {
         userId_courseId: {
@@ -69,14 +64,25 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Automatically create an attendance record linked to the enrollment
+    const attendance = await prisma.attendance.create({
+      data: {
+        enrollment_id: enrollment.id,
+        checklist: [], // start with empty attendance checklist
+      },
+    });
+
     return new Response(
-      JSON.stringify({ message: "User enrolled successfully", enrollment }),
+      JSON.stringify({
+        message: "User enrolled successfully",
+        enrollment,
+        attendance,
+      }),
       { status: 201, headers: { "Content-Type": "application/json" } }
     );
   } catch (error: any) {
     console.error("Enrollment error:", error);
 
-    // Prisma unique constraint error handling
     if (
       error?.code === "P2002" &&
       error?.meta?.target?.includes("userId_courseId")

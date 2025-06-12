@@ -1,13 +1,12 @@
-import { PrismaClient } from "@prisma/client";
 import { NextRequest } from "next/server";
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
 
 export async function POST(
   req: NextRequest,
-  context: { params: { id: string } } // id param is string
+  context: { params: Promise<{ id: string }> } // params is a Promise
 ) {
-  const id = parseInt(context.params.id, 10); // convert to number
+  const params = await context.params; // await the params
+  const id = parseInt(params.id, 10);
 
   if (isNaN(id)) {
     return new Response(JSON.stringify({ message: "Invalid course id" }), {

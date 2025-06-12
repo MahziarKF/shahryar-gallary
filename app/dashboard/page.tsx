@@ -1,33 +1,38 @@
-// app/dashboard/page.tsx
-import { getUser } from "@/lib/auth";
+// app/dashboard/page.tsx (or wherever DashBoard is used)
+import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import DashBoardOptions from "../components/dashboardOptions";
 import HeaderWrapper from "../components/headerWraper";
-import { redirect } from "next/navigation";
+import getTeachers from "@/lib/getTeachers";
+import getCourses from "@/lib/courses";
+import getUser from "@/lib/user";
+import getProducts from "@/lib/products";
+import getCategorys from "@/lib/category";
 
 export default async function DashBoard() {
-  const user = await getUser();
+  const cookieStore = await cookies();
 
-  // Redirect unauthenticated users
-  if (!user) {
-    redirect("/"); // Redirect on server
-  }
+  let user = null;
+  try {
+    user = await getUser();
+  } catch (error) {
+    if (error instanceof Error && error.message === "TOKEN_EXPIRED") {
+      // Clear token cookie
+      cookieStore.set("token", "", { maxAge: -1, path: "/" });
 
-  // Create absolute URL for server-side fetch
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-  const res = await fetch(
-    `${baseUrl}/api/getUserData?username=${user.username}`,
-    {
-      cache: "no-store", // Optional: ensures fresh data
+      // Redirect to home page
+      redirect("/");
     }
-  );
-
-  if (!res.ok) {
-    // Optional error handling
-    redirect("/error");
   }
 
-  const { userData } = await res.json();
-  // Dashboard options
+  if (!user) {
+    redirect("/"); // fallback if user not found
+  }
+
+  const teachers = await getTeachers();
+  const courses = await getCourses();
+  const products = await getProducts();
+  const categorys = await getCategorys();
   const dashboardOptions = [
     { label: "درس‌ها", key: "Courses" },
     { label: "آکوردها", key: "Chords", note: "(not implemented)" },
@@ -36,16 +41,23 @@ export default async function DashBoard() {
   ];
 
   if (user?.role === "admin") {
-    dashboardOptions.push({
-      label: "مدیریت دانش‌آموزان",
-      key: "Management",
-    });
+    dashboardOptions.push(
+      { label: "مدیریت دانش‌آموزان", key: "Management" },
+      { label: "مدیریت کالاها", key: "Products" }
+    );
   }
 
   return (
     <div className="w-screen min-h-screen bg-gray-100/95">
       <HeaderWrapper />
-      <DashBoardOptions user={userData} dashBoardOptions={dashboardOptions} />
+      <DashBoardOptions
+        user={user}
+        teachers={teachers}
+        courses={courses}
+        dashBoardOptions={dashboardOptions}
+        products={products ?? []} // ✅ fallback to empty array
+        categorys={categorys ?? []}
+      />
     </div>
   );
 }

@@ -11,12 +11,22 @@ CREATE TABLE "Category" (
 -- ========================
 CREATE TABLE "Product" (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(200) NOT NULL,
+    name VARCHAR(200) NOT NULL UNIQUE,
     description TEXT,
     price TEXT NOT NULL,
     stock INT NOT NULL DEFAULT 0,
-    category_id INT REFERENCES "Category"(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ========================
+-- PRODUCT-CATEGORY (MANY-TO-MANY)
+-- ========================
+CREATE TABLE "ProductCategory" (
+    product_id INT NOT NULL,
+    category_id INT NOT NULL,
+    PRIMARY KEY (product_id, category_id),
+    FOREIGN KEY (product_id) REFERENCES "Product"(id) ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES "Category"(id) ON DELETE CASCADE
 );
 
 -- ========================
@@ -46,19 +56,18 @@ CREATE TABLE "Teacher" (
     name VARCHAR(100) NOT NULL,
     bio TEXT,
     image_url TEXT,
-    phone VARCHAR(20) UNIQUE,
+    phone VARCHAR(20),
     professions TEXT[] DEFAULT '{}',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
 
 -- ========================
 -- COURSES
 -- ========================
 CREATE TABLE "Course" (
     id SERIAL PRIMARY KEY,
-    title VARCHAR(200) NOT NULL UNIQUE, 
+    title VARCHAR(200) NOT NULL, 
     description TEXT,
     price TEXT NOT NULL,
     duration TEXT NOT NULL,
@@ -100,11 +109,10 @@ CREATE TABLE "CourseTeacher" (
 CREATE TABLE "Attendance" (
     id SERIAL PRIMARY KEY,
     enrollment_id INT NOT NULL UNIQUE,
-    checklist BOOLEAN[] NOT NULL DEFAULT '{}',
+    checklist SMALLINT[] NOT NULL DEFAULT '{}',
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (enrollment_id) REFERENCES "Enrollment"(id) ON DELETE CASCADE
 );
-
 
 -- ========================
 -- INSERT MAHZ USER
@@ -125,3 +133,9 @@ UPDATE "User" SET role = 'admin' WHERE username = 'ssa';
 -- ========================
 INSERT INTO "Enrollment" (user_id, course_id)
 SELECT id, 1 FROM "User" WHERE username = 'mahz';
+
+-- ========================
+-- RESET TABLES FOR CLEAN START (DANGEROUS: DATA LOSS)
+-- ========================
+TRUNCATE TABLE "ProductCategory", "CourseTeacher", "Enrollment", "Attendance", "Course", "Teacher", "User", "Product", "Category"
+RESTART IDENTITY CASCADE;

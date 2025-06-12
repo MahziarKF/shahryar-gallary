@@ -1,7 +1,7 @@
 // app/api/logout/route.ts
 import { NextResponse } from "next/server";
 import { serialize } from "cookie";
-
+import prisma from "@/lib/prisma";
 export async function GET() {
   const expiredToken = serialize("token", "", {
     httpOnly: true,

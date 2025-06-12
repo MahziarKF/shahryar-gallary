@@ -24,22 +24,20 @@ model User {
   teachings         CourseTeacher[]
   enrollments       Enrollment[]
 }
-
-
 model Course {
   id          Int             @id @default(autoincrement())
-  title       String          @unique @db.VarChar(200)
+  title       String          @db.VarChar(200)
   description String?
   price       String
   duration    String
-teacherId   Int
-teacher     Teacher @relation(fields: [teacherId], references: [id], onDelete: Restrict)
-
+  teacherId   Int             @map("teacher_id")
+  teacher     Teacher         @relation(fields: [teacherId], references: [id], onDelete: Restrict)
   is_active   Boolean?        @default(true)
   created_at  DateTime?       @default(now()) @db.Timestamp(6)
   teachers    CourseTeacher[] // still supports co-teachers
   enrollments Enrollment[]
 }
+
 model Teacher {
   id          Int      @id @default(autoincrement())
   name        String   @db.VarChar(100)
@@ -67,21 +65,21 @@ model CourseTeacher {
 }
 
 model Category {
-  id      Int       @id @default(autoincrement())
-  name    String    @db.VarChar(100)
-  Product Product[]
+  id       Int       @id @default(autoincrement())
+  name     String    @db.VarChar(100)
+  products Product[] @relation("ProductCategories")
 }
 
 model Product {
-  id          Int       @id @default(autoincrement())
-  name        String    @db.VarChar(200)
-  description String?
+  id          Int        @id @default(autoincrement())
+  name        String     @unique @db.VarChar(200)
+  description String
   price       String
-  stock       Int       @default(0)
-  category_id Int?
-  created_at  DateTime? @default(now()) @db.Timestamp(6)
-  Category    Category? @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  stock       Int        @default(0)
+  created_at  DateTime?  @default(now()) @db.Timestamp(6)
+  categories  Category[] @relation("ProductCategories")
 }
+
 
 model Enrollment {
   id          Int         @id @default(autoincrement())
@@ -99,7 +97,7 @@ model Enrollment {
 model Attendance {
   id            Int        @id @default(autoincrement())
   enrollment_id Int        @unique
-  checklist     Boolean[]  @default([])
+  checklist     Int[]  @default([])
   last_updated  DateTime?  @default(now()) @updatedAt @db.Timestamp(6)
   Enrollment    Enrollment @relation(fields: [enrollment_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }

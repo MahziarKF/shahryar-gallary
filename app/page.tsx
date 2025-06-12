@@ -8,18 +8,19 @@ import CircleSlider from "./components/CircleSlider";
 import SignUpSuggestion from "./components/signUpSuggestion";
 import { getUser } from "@/lib/auth";
 import HeaderWrapper from "./components/headerWraper";
+import getCourses from "@/lib/courses";
 
 export default async function Page() {
   const user: any = await getUser();
+  const courses = await getCourses();
   return (
     <>
       <HeaderWrapper></HeaderWrapper>
       <div className="overflow-x-hidden">
         {/* Section 1 */}
-        <section className="w-screen h-screen bg-[#FFF7E6] flex flex-col shadow-2xl">
-          {/* Use flex-1 so MainTop takes remaining height without breaking layout */}
-          <div className="flex-1 overflow-y-hidden">
-            <MainTop />
+        <section className="w-full min-h-screen bg-[#FFF7E6] flex flex-col shadow-2xl">
+          <div className="flex-1 overflow-y-auto md:overflow-y-hidden">
+            <MainTop courses={courses} />
           </div>
         </section>
 

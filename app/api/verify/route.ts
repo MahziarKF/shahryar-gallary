@@ -1,9 +1,7 @@
 // app/api/verify/route.ts or pages/api/verify.ts depending on your structure
 
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import { NextRequest } from "next/server";
-
-const prisma = new PrismaClient();
 
 export async function POST(req: NextRequest) {
   const body = await req.json();

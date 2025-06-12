@@ -1,25 +1,13 @@
-export default function CourseList() {
-  const courses = [
-    {
-      title: "آموزش گیتار از صفر",
-      description: "یادگیری گام به گام گیتار، مناسب برای تمام سنین",
-    },
-    {
-      title: "تئوری موسیقی کاربردی",
-      description: "شناخت نُت‌ها، گام‌ها، هارمونی و نحوه استفاده در اجرا",
-    },
-    {
-      title: "آموزش پیانو کلاسیک",
-      description: "دوره‌ی تخصصی نواختن پیانو با متد استاندارد جهانی",
-    },
-  ];
+import { useState } from "react";
+import { Course } from "../types";
 
+export default function CourseList({ courses }: { courses: Course[] }) {
   return (
-    <section className="w-full px-10 py-16 -[#1A120B] text-white space-y-8">
+    <section className="w-full px-10 py-16  text-white space-y-8">
       <h2 className="text-3xl md:text-4xl font-bold text-amber-300 text-right">
         دوره‌های پیشنهادی
       </h2>
-      <div className="grid md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {courses.map((course, index) => (
           <div
             key={index}

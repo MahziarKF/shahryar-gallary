@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Settings from "./settings";
 import ManagementSection from "./managementSection";
+import ProductsManagement from "./productsManagement";
 
 interface Props {
   user: any;
@@ -11,9 +12,20 @@ interface Props {
     key: string;
     note?: string;
   }[];
+  teachers: any[];
+  courses: any[];
+  products: any[];
+  categorys: any[];
 }
 
-export default function DashBoardOptions({ user, dashBoardOptions }: Props) {
+export default function DashBoardOptions({
+  user,
+  teachers,
+  dashBoardOptions,
+  courses,
+  categorys,
+  products,
+}: Props) {
   const [selectedKey, setSelectedKey] = useState("Courses");
 
   // Components for dashboard contents:
@@ -52,7 +64,7 @@ export default function DashBoardOptions({ user, dashBoardOptions }: Props) {
     return (
       <section className="space-y-4">
         <h3 className="text-2xl font-semibold text-orange-600">مدیریت</h3>
-        <ManagementSection />
+        <ManagementSection courses={courses} teachers={teachers} />
         {/* Add admin controls, lists, etc. */}
       </section>
     );
@@ -71,7 +83,8 @@ export default function DashBoardOptions({ user, dashBoardOptions }: Props) {
 
       case "Management":
         return <Management />;
-
+      case "Products":
+        return <ProductsManagement products={products} categorys={categorys} />;
       default:
         return <div className="text-gray-500 italic">گزینه نامعتبر است.</div>;
     }

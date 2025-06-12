@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
 type TeacherType = {
   id: number;
@@ -13,10 +15,22 @@ type TeacherType = {
   updated_at?: string;
 };
 
-export default function CreateTeacher() {
-  const [teachers, setTeachers] = useState<TeacherType[] | null>(null);
+export default function CreateTeacher({
+  existingTeachers,
+  onTeacherChange,
+}: {
+  existingTeachers: TeacherType[];
+  onTeacherChange: (newTeacher: any) => void;
+}) {
+  const [teachers, setTeachers] = useState<TeacherType[]>([]);
 
-  // Change professions from string to string array
+  // Load existing teachers on mount
+  useEffect(() => {
+    if (existingTeachers?.length) {
+      setTeachers(existingTeachers);
+    }
+  }, [existingTeachers]);
+
   const [formData, setFormData] = useState({
     name: "",
     professions: [] as string[],
@@ -25,22 +39,15 @@ export default function CreateTeacher() {
     phone: "",
   });
 
-  // Input field for adding a profession
   const [newProfession, setNewProfession] = useState("");
-
   const [message, setMessage] = useState<{
     message: string;
     isOk: boolean;
   } | null>(null);
 
-  // Handlers
-
   const handleInputChange = (e: React.ChangeEvent<any>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleProfessionInputChange = (
@@ -67,7 +74,6 @@ export default function CreateTeacher() {
     }));
   };
 
-  // Add profession on Enter key press
   const handleProfessionKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>
   ) => {
@@ -77,21 +83,44 @@ export default function CreateTeacher() {
     }
   };
 
-  // Placeholder addTeacher function (implement your logic)
   const addTeacher = async () => {
-    // console.log(formData);
-    // TODO: Implement adding teacher logic
     const res = await fetch("/api/createTeacher", {
       method: "POST",
       body: JSON.stringify(formData),
     });
+
     const result = await res.json();
     console.log(result);
+    if (res.status == 201) {
+      setTeachers((prev) => [...prev, result]);
+      onTeacherChange([...teachers, result]);
+      setFormData({
+        name: "",
+        professions: [],
+        bio: "",
+        image_url: "",
+        phone: "",
+      });
+      setMessage({ message: "معلم با موفقیت اضافه شد.", isOk: true });
+    } else {
+      setMessage({
+        message: result?.error || "خطا در افزودن معلم",
+        isOk: false,
+      });
+    }
   };
 
-  // Placeholder deleteTeacher function (implement your logic)
   const deleteTeacher = async (id: number) => {
-    // TODO: Implement deleting teacher logic
+    const res = await fetch(`/api/deleteTeacher`, {
+      method: "POST",
+      body: JSON.stringify({ id }),
+    });
+    if (res.ok) {
+      setTeachers((prev) => prev.filter((t) => t.id !== id));
+    } else {
+      const result = await res.json();
+      alert(result?.error || "خطا در حذف معلم");
+    }
   };
 
   return (
@@ -186,7 +215,7 @@ export default function CreateTeacher() {
 
       <div>
         <h3 className="font-bold mb-2">لیست معلمان</h3>
-        {teachers && teachers.length > 0 ? (
+        {teachers.length > 0 ? (
           <ul className="list-none space-y-3">
             {teachers.map((t) => (
               <li
