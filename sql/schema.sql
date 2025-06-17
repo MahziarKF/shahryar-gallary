@@ -15,6 +15,7 @@ CREATE TABLE "Product" (
     description TEXT,
     price TEXT NOT NULL,
     stock INT NOT NULL DEFAULT 0,
+    image_url TEXT DEFAULT '',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -27,6 +28,17 @@ CREATE TABLE "ProductCategory" (
     PRIMARY KEY (product_id, category_id),
     FOREIGN KEY (product_id) REFERENCES "Product"(id) ON DELETE CASCADE,
     FOREIGN KEY (category_id) REFERENCES "Category"(id) ON DELETE CASCADE
+);
+
+-- ========================
+-- DISCOUNTS (NEW)
+-- ========================
+CREATE TABLE "Discount" (
+    id SERIAL PRIMARY KEY,
+    product_id INT NOT NULL,
+    discount_percent INT NOT NULL CHECK (discount_percent >= 0),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES "Product"(id) ON DELETE CASCADE
 );
 
 -- ========================
@@ -49,14 +61,14 @@ CREATE TABLE "User" (
 );
 
 -- ========================
--- TEACHERS (new model)
+-- TEACHERS
 -- ========================
 CREATE TABLE "Teacher" (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     bio TEXT,
     image_url TEXT,
-    phone VARCHAR(20),
+    phone VARCHAR(20) UNIQUE,
     professions TEXT[] DEFAULT '{}',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -91,7 +103,7 @@ CREATE TABLE "Enrollment" (
 );
 
 -- ========================
--- COURSE TEACHERS (Co-teaching)
+-- COURSE TEACHERS
 -- ========================
 CREATE TABLE "CourseTeacher" (
     id SERIAL PRIMARY KEY,

@@ -1,28 +1,26 @@
 // components/ProductCardList.tsx
 import { Product } from "../types";
+import ProductCard from "./productView/productCard";
 
 export default function ProductCardList({
   products,
   handleDeleteProduct,
+  onProductClick,
 }: {
   products: Product[];
   handleDeleteProduct: (id: number) => void;
+  onProductClick: (id: number) => void;
 }) {
+  console.log(products);
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mt-6">
       {products.map((product) => (
-        <div
-          key={product.id}
-          className="flex justify-between items-center bg-gray-100 p-3 rounded"
-        >
-          <span>{product.name}</span>
-          <button
-            onClick={() => handleDeleteProduct(product.id)}
-            className="w-full bg-red-600 text-white rounded py-1 px-3 hover:bg-red-700 transition max-w-[120px] text-sm text-center"
-          >
-            حذف
-          </button>
-        </div>
+        <ProductCard
+          key={product.name}
+          product={product}
+          onProductClick={onProductClick}
+          handleDeleteProduct={handleDeleteProduct}
+        />
       ))}
     </div>
   );

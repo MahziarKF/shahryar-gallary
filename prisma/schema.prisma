@@ -24,6 +24,19 @@ model User {
   teachings         CourseTeacher[]
   enrollments       Enrollment[]
 }
+
+model Teacher {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(100)
+  bio         String?
+  image_url   String?
+  phone       String?   @unique @db.VarChar(20)
+  professions String[]  @default([])
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  updated_at  DateTime? @default(now()) @updatedAt @db.Timestamp(6)
+  courses     Course[]
+}
+
 model Course {
   id          Int             @id @default(autoincrement())
   title       String          @db.VarChar(200)
@@ -31,26 +44,12 @@ model Course {
   price       String
   duration    String
   teacherId   Int             @map("teacher_id")
-  teacher     Teacher         @relation(fields: [teacherId], references: [id], onDelete: Restrict)
   is_active   Boolean?        @default(true)
   created_at  DateTime?       @default(now()) @db.Timestamp(6)
-  teachers    CourseTeacher[] // still supports co-teachers
+  teacher     Teacher         @relation(fields: [teacherId], references: [id], onUpdate: NoAction)
+  teachers    CourseTeacher[]
   enrollments Enrollment[]
 }
-
-model Teacher {
-  id          Int      @id @default(autoincrement())
-  name        String   @db.VarChar(100)
-  professions String[]
-  bio         String?
-  image_url   String?
-  phone       String?  @unique
-  created_at  DateTime @default(now()) @db.Timestamp(6)
-  updated_at  DateTime @default(now()) @updatedAt @db.Timestamp(6)
-
-  courses     Course[]
-}
-
 
 model CourseTeacher {
   id          Int       @id @default(autoincrement())
@@ -63,23 +62,6 @@ model CourseTeacher {
   @@unique([userId, courseId])
   @@map("CourseTeacher")
 }
-
-model Category {
-  id       Int       @id @default(autoincrement())
-  name     String    @db.VarChar(100)
-  products Product[] @relation("ProductCategories")
-}
-
-model Product {
-  id          Int        @id @default(autoincrement())
-  name        String     @unique @db.VarChar(200)
-  description String
-  price       String
-  stock       Int        @default(0)
-  created_at  DateTime?  @default(now()) @db.Timestamp(6)
-  categories  Category[] @relation("ProductCategories")
-}
-
 
 model Enrollment {
   id          Int         @id @default(autoincrement())
@@ -97,7 +79,43 @@ model Enrollment {
 model Attendance {
   id            Int        @id @default(autoincrement())
   enrollment_id Int        @unique
-  checklist     Int[]  @default([])
+  checklist     Int[]      @default([]) @db.SmallInt
   last_updated  DateTime?  @default(now()) @updatedAt @db.Timestamp(6)
   Enrollment    Enrollment @relation(fields: [enrollment_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model ProductCategory {
+  product_id  Int
+  category_id Int
+  category    Category @relation(fields: [category_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  product     Product  @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([product_id, category_id])
+  @@map("ProductCategory")
+}
+
+model Category {
+  id       Int               @id @default(autoincrement())
+  name     String            @db.VarChar(100)
+  products ProductCategory[]
+}
+
+model Product {
+  id          Int               @id @default(autoincrement())
+  name        String            @unique @db.VarChar(200)
+  description String?
+  price       String
+  stock       Int               @default(0)
+  image_url   String?           @default("")
+  created_at  DateTime?         @default(now()) @db.Timestamp(6)
+  discount    Discount[]
+  categories  ProductCategory[]
+}
+
+model Discount {
+  id               Int       @id @default(autoincrement())
+  product_id       Int
+  discount_percent Int
+  created_at       DateTime? @default(now()) @db.Timestamp(6)
+  product          Product   @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }

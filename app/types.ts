@@ -1,4 +1,3 @@
-// types.ts
 export interface User {
   id: number;
   username: string;
@@ -17,6 +16,18 @@ export interface User {
   enrollments?: Enrollment[];
 }
 
+export interface Teacher {
+  id: number;
+  name: string;
+  bio?: string | null;
+  image_url?: string | null;
+  phone?: string | null;
+  professions: string[];
+  created_at?: Date | null;
+  updated_at?: Date | null;
+  courses?: Course[];
+}
+
 export interface Course {
   id: number;
   title: string;
@@ -24,23 +35,11 @@ export interface Course {
   price: string;
   duration: string;
   teacherId: number;
-  teacher?: Teacher;
   is_active?: boolean | null;
   created_at?: Date | null;
-  teachers?: CourseTeacher[]; // co-teachers
+  teacher?: Teacher;
+  teachers?: CourseTeacher[];
   enrollments?: Enrollment[];
-}
-
-export interface Teacher {
-  id: number;
-  name: string;
-  professions: string[];
-  bio?: string | null;
-  image_url?: string | null;
-  phone?: string | null;
-  created_at: Date;
-  updated_at: Date;
-  courses?: Course[];
 }
 
 export interface CourseTeacher {
@@ -50,23 +49,6 @@ export interface CourseTeacher {
   assigned_at?: Date | null;
   course?: Course;
   user?: User;
-}
-
-export interface Category {
-  id: number;
-  name: string;
-  Product?: Product[];
-}
-
-export interface Product {
-  id: number;
-  name: string;
-  description?: string | null;
-  price: string;
-  stock: number;
-  category_id?: number | null;
-  created_at?: Date | null;
-  Category?: Category[] | null;
 }
 
 export interface Enrollment {
@@ -82,7 +64,40 @@ export interface Enrollment {
 export interface Attendance {
   id: number;
   enrollment_id: number;
-  checklist: boolean[];
+  checklist: number[]; // Prisma: Int[], keep as number[]
   last_updated?: Date | null;
   Enrollment?: Enrollment;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  products?: ProductCategory[]; // Correct relation from Prisma
+}
+
+export interface ProductCategory {
+  product_id: number;
+  category_id: number;
+  product?: Product;
+  category?: Category;
+}
+
+export interface Product {
+  id: number;
+  name: string;
+  description?: string | null;
+  price: string;
+  stock: number;
+  image_url?: string | null;
+  created_at?: Date | null;
+  discount?: Discount[]; // Correct relation from Prisma (array)
+  categories?: ProductCategory[]; // Correct relation from Prisma
+}
+
+export interface Discount {
+  id: number;
+  product_id: number;
+  discount_percent: number; // Typo fixed: from 'discount_precent'
+  created_at?: Date | null;
+  product?: Product;
 }
