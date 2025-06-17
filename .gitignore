@@ -12,6 +12,10 @@
 
 #ignore schemas
 /prisma
+/prisma/schema.prisma
+
+#ignore sql
+/sql/schema.sql
 /sql
 
 # testing
