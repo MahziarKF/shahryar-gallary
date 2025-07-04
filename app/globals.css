@@ -22,3 +22,71 @@ html::-webkit-scrollbar {
 .scrollbar-hide::-webkit-scrollbar {
   display: none; /* Safari and Chrome */
 }
+
+@layer utilities {
+  .animate-spin-slow {
+    animation: spin 1.5s linear infinite;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@keyframes rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dash {
+  0% {
+    stroke-dasharray: 1, 150;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -35;
+  }
+  100% {
+    stroke-dasharray: 1, 150;
+    stroke-dashoffset: -125;
+  }
+}
+
+.loader-circle {
+  display: inline-block;
+  width: 48px;
+  height: 48px;
+}
+
+.loader-circle:before {
+  content: "";
+  box-sizing: border-box;
+  display: block;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-top-color: #f97316; /* Orange color */
+  animation: spinGrow 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes spinGrow {
+  0% {
+    transform: rotate(0deg);
+    border-top-width: 2px;
+  }
+  50% {
+    transform: rotate(180deg);
+    border-top-width: 6px;
+  }
+  100% {
+    transform: rotate(360deg);
+    border-top-width: 2px;
+  }
+}

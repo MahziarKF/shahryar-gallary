@@ -1,3 +1,5 @@
+import { Prisma } from "@prisma/client";
+
 export interface User {
   id: number;
   username: string;
@@ -81,6 +83,19 @@ export interface ProductCategory {
   product?: Product;
   category?: Category;
 }
+export type SupportMessageArray = Prisma.SupportMessageGetPayload<{}>[];
+
+export type Conversation = {
+  id: string;
+  userId: number;
+  adminId: number | null;
+  createdAt: string;
+  updatedAt: string;
+  isActive: boolean;
+};
+export type ConversationWithMessages = Conversation & {
+  messages: SupportMessage[];
+};
 
 export interface Product {
   id: number;
@@ -90,7 +105,7 @@ export interface Product {
   stock: number;
   image_url?: string | null;
   created_at?: Date | null;
-  discount?: Discount[]; // Correct relation from Prisma (array)
+  discount?: Discount; // Correct relation from Prisma (array)
   categories?: ProductCategory[]; // Correct relation from Prisma
 }
 

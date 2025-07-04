@@ -54,10 +54,10 @@ const HeroBanner = () => {
             notes.map((note, index) => (
               <motion.span
                 key={note + index}
-                initial={{ x: 0, opacity: 1, scale: 1 }}
+                initial={{ x: 0, opacity: 0, scale: 1 }}
                 animate={{
                   x: -150 - index * 50, // Fly further left
-                  opacity: 0, // Fully fade out
+                  opacity: 1, // Fully fade out
                   scale: [1, 1.3, 1], // Optional slight pulse
                 }}
                 transition={{

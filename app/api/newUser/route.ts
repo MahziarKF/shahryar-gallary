@@ -2,8 +2,8 @@ import { NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcrypt";
 import { createTokenForUser, createUserCookie } from "@/lib/auth";
-import crypto from "crypto";
 const { sendVerificationEmail } = require("@/lib/email");
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -40,10 +40,9 @@ export async function POST(req: NextRequest) {
     // Hash the password
     const hashedPassword = await bcrypt.hash(body.password, 10);
 
-    // Generate email verification token
-    const verificationCode = await sendVerificationEmail(body.email);
-    console.log("------------", typeof verificationCode);
-    // Create new user with verification token and is_verified false
+    // Email verification temporarily skipped
+    // const verificationCode = await sendVerificationEmail(body.email); // <- disabled
+
     const newUser = await prisma.user.create({
       data: {
         username: body.username,
@@ -51,12 +50,10 @@ export async function POST(req: NextRequest) {
         phone: body.phone ?? null,
         password: hashedPassword,
         role: body.role || "student",
-        is_verified: false,
-        verification: Number(verificationCode), // Make sure this field exists in your Prisma schema
+        is_verified: true, // Bypass email verification
+        verification: null, // No verification code needed
       },
     });
-
-    // Send verification email
 
     // Create JWT token and cookie
     const token = createTokenForUser({
@@ -66,10 +63,9 @@ export async function POST(req: NextRequest) {
     });
     const cookie = createUserCookie(token);
 
-    // Return user info and set cookie
     return new Response(
       JSON.stringify({
-        message: "ثبت‌نام با موفقیت انجام شد! لطفا ایمیل خود را تایید کنید.",
+        message: "ثبت‌نام با موفقیت انجام شد!",
         user: {
           id: newUser.id,
           username: newUser.username,

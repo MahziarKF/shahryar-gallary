@@ -1,6 +1,7 @@
-import { Product } from "@/app/types";
+import { Category, Product } from "@/app/types";
 import { getProductImages } from "@/lib/image";
 import { useEffect, useState } from "react";
+import ProductImage from "./productImage";
 
 export default function ProductCard({
   product,
@@ -11,7 +12,7 @@ export default function ProductCard({
   onProductClick?: (id: number) => void;
   handleDeleteProduct: (id: number) => void;
 }) {
-  const [images, setImages] = useState<any>("");
+  const [images, setImages] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchImages = async () => {
@@ -29,6 +30,7 @@ export default function ProductCard({
     };
     fetchImages();
   }, [product.name]);
+  console.log(product);
   return (
     <>
       <div
@@ -39,7 +41,7 @@ export default function ProductCard({
         className="bg-white shadow p-4 rounded flex flex-col justify-between"
       >
         {/* Product Image */}
-        {images ? (
+        {/* {images.length > 0 ? (
           <img
             src={images[0]}
             alt={product.name}
@@ -49,8 +51,8 @@ export default function ProductCard({
           <div className="w-full h-48 bg-gray-200 flex items-center justify-center text-gray-500 mb-4 rounded">
             بدون تصویر
           </div>
-        )}
-
+        )} */}
+        <ProductImage productName={product.name} />
         {/* Product Info */}
         <h3 className="text-lg font-semibold mb-2">{product.name}</h3>
         <p className="text-sm text-gray-600 mb-2">
@@ -66,20 +68,18 @@ export default function ProductCard({
         </div>
 
         {/* Categories */}
-        {product.categories && product.categories.length > 0 && (
-          <div className="mb-2 text-sm text-gray-700">
-            دسته‌بندی‌ها:{" "}
-            {product.categories
-              .map((cat) => cat.category?.name)
-              .filter((name) => name !== undefined)
-              .join(", ")}
-          </div>
-        ) ? null : "بدون دسته بندی"}
+        {product.categories ? (
+          <>
+            <p>دسته بندی ها :{product.categories?.map((c: any) => c.name)}</p>
+          </>
+        ) : (
+          "بدون دسته بندی"
+        )}
 
         {/* Discount */}
         {product.discount && product.discount.length > 0 && (
           <div className="mb-2 text-sm text-green-700">
-            تخفیف: {product.discount[0].discount_percent}٪
+            تخفیف: {product.discount.discount_percent}٪
           </div>
         )}
 

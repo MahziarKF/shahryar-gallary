@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { getUserFromToken } from "./auth";
-import { PrismaClient } from "@prisma/client";
 import prisma from "@/lib/prisma";
+
 function isTokenExpired(token: string): boolean {
   try {
     const [, payloadBase64] = token.split(".");
@@ -19,11 +19,13 @@ export default async function getUser() {
     const token = cookieStore.get("token")?.value;
 
     if (!token || isTokenExpired(token)) {
-      throw new Error("TOKEN_EXPIRED");
+      // Instead of throwing, just return undefined
+      console.warn("Token expired or not found");
+      return undefined;
     }
 
     const userFromToken = await getUserFromToken(token);
-    if (!userFromToken) return;
+    if (!userFromToken) return undefined;
 
     const user = await prisma.user.findUnique({
       where: { username: userFromToken.username },
@@ -31,9 +33,7 @@ export default async function getUser() {
 
     return user;
   } catch (error) {
-    if (error instanceof Error && error.message === "TOKEN_EXPIRED") {
-      throw error;
-    }
     console.error("Error while getting user data -> lib/user.ts", error);
+    return undefined;
   }
 }

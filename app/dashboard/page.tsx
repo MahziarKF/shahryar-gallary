@@ -8,10 +8,11 @@ import getCourses from "@/lib/courses";
 import getUser from "@/lib/user";
 import getProducts from "@/lib/products";
 import getCategorys from "@/lib/category";
+import getAllConversations from "@/lib/conversations";
 
 export default async function DashBoard() {
   const cookieStore = await cookies();
-
+  let conversations;
   let user = null;
   try {
     user = await getUser();
@@ -43,13 +44,15 @@ export default async function DashBoard() {
   if (user?.role === "admin") {
     dashboardOptions.push(
       { label: "مدیریت دانش‌آموزان", key: "Management" },
-      { label: "مدیریت کالاها", key: "Products" }
+      { label: "مدیریت کالاها", key: "Products" },
+      { label: "Online Support", key: "OnlineSupport" }
     );
+    conversations = await getAllConversations();
   }
-
+  console.log(conversations);
   return (
-    <div className="w-screen min-h-screen bg-gray-100/95">
-      <HeaderWrapper />
+    <div className="w-screen min-h-screen bg-gray-200/95">
+      <HeaderWrapper sticky={false} />
       <DashBoardOptions
         user={user}
         teachers={teachers}
@@ -57,6 +60,7 @@ export default async function DashBoard() {
         dashBoardOptions={dashboardOptions}
         products={products ?? []} // ✅ fallback to empty array
         categorys={categorys ?? []}
+        conversations={conversations}
       />
     </div>
   );

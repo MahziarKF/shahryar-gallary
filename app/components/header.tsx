@@ -6,20 +6,25 @@ import AuthModal from "./SignUpModal";
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
-interface props {
+interface Props {
   user: {
     userId: string;
     username: string;
     role: string;
   } | null;
+  sticky?: boolean; // ✅ Optional sticky prop
 }
 
-export default function Header({ user }: props) {
+export default function Header({ user, sticky = true }: Props) {
   const [showModal, setShowModal] = useState(false);
   const pathName = usePathname();
   const router = useRouter();
+
+  // ✅ Conditionally set sticky class
+  const headerClasses = `z-[100] bg-gray-100/95 shadow-lg ${sticky ? "sticky top-0" : ""} w-full flex flex-wrap items-center justify-between px-4 py-2`;
+
   return (
-    <div className="z-[100] bg-gray-100/95 shadow-lg sticky top-0 w-full flex flex-wrap items-center justify-between px-4 py-2">
+    <div className={headerClasses}>
       {/* Left side: Dashboard/Login button */}
       <div className="flex items-center">
         {user ? (
@@ -83,7 +88,7 @@ export default function Header({ user }: props) {
           ]}
         />
 
-        <div>{/*logo  shouldbehere*/}</div>
+        <div>{/* logo should be here */}</div>
       </div>
 
       {/* Modal */}
